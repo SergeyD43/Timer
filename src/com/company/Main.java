@@ -12,8 +12,10 @@ public class Main {
         Counter counter = new Counter();
         MyThread myThread = new MyThread(counter);
         ThreadMessage5  threadMessage5 = new ThreadMessage5(counter);
+        ThreadMessage7  threadMessage7 = new ThreadMessage7(counter);
         myThread.start();
         threadMessage5.start();
+        threadMessage7.start();
     }
 }
 
@@ -33,10 +35,10 @@ class MyThread extends Thread{
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+            synchronized (count) {
             count.increment();
             System.out.println(count);
-            synchronized (count) {
-                count.notifyAll();
+            count.notifyAll();
             }
         }
     }
@@ -53,9 +55,35 @@ class ThreadMessage5 extends Thread{
     @Override
     public void run() {
         for (;;){
-            if ((count.getCount() % 5) == 0 && count.getCount()!=0)
-                System.out.println("Message5");
             synchronized (count){
+                if ((count.getCount() % 5) == 0 && count.getCount()!=0)
+                    System.out.println("Message5");
+
+                try {
+                    count.wait();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+}
+
+class ThreadMessage7 extends Thread{
+
+    private Counter count;
+
+    public ThreadMessage7(Counter count) {
+        this.count = count;
+    }
+
+    @Override
+    public void run() {
+        for (;;){
+            synchronized (count){
+                if ((count.getCount() % 7) == 0 && count.getCount()!=0)
+                    System.out.println("Message7");
+
                 try {
                     count.wait();
                 } catch (InterruptedException e) {
